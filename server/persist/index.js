@@ -48,6 +48,11 @@ const patchTodo = function (id, todoData) {
     return todoData
 }
 
+setupTodo = function(tododData) {
+    let deadline = new Date();
+    let done = false
+}
+
 module.exports = {
     addTodo: addTodo,
     getTodo: getTodo,
