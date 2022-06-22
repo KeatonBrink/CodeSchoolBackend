@@ -1,27 +1,52 @@
 const todo_db = {};
+const todo_db_Dates = {};
 
-function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
- charactersLength));
-   }
-   return result;
-}
+
+//Antiquated function
+// function makeid(length) {
+//     var result           = '';
+//     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//     var charactersLength = characters.length;
+//     for ( var i = 0; i < length; i++ ) {
+//       result += characters.charAt(Math.floor(Math.random() * 
+//  charactersLength));
+//    }
+//    return result;
+// }
 
 //For POST
 const addTodo = function (todo) {
-    id = makeid(8);
-    todo.id = id;
+    //id = makeid(8);
+    //todo.id = id;
     todo_db[todo.id] = todo;
-    console.log(todo_db);
+    todo_db_Dates[todo.id] = new Date
+    //console.log(todo_db);
     return todo
 }
 
 const getTodo = function (id) {
-    return todo_db[id];
+    if (todo_db[id] == undefined){
+        return false
+    } else {
+        return todo_db[id];
+        // if (todo_db_Dates[id] < Date.now() - 12000) {
+        //     delete todo_db[id];
+        //     delete todo_db_Dates[id];
+        //     return false
+        // } else {
+        //     return todo_db[id];
+        //     //return todo_db[id];
+        // }
+    }
+}
+
+const expiredTodos = function () {
+    todo_db.forEach(element => {
+        if (todo_db_Dates[element.id] < Date.now() - 12000) {
+            delete todo_db[element.id];
+            delete todo_db_Dates[element.id];
+        }
+    });
 }
 
 const getTodos = function () {
@@ -66,4 +91,5 @@ module.exports = {
     getTodos: getTodos,
     patchTodo: patchTodo,
     putTodo: putTodo,
+    expiredTodos
 }

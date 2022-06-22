@@ -20,7 +20,7 @@ mongodb.connect();
 //pull in db
 // const persist = require("./persist/memory")
 
-const Todo = require("./persist/todo")
+const Todo = require("./persist/todo");
 
 //example of how to call addTodo function
 //persist.addTodo();
@@ -32,8 +32,9 @@ flags.parse();
 
 // put in env vars
 const dotenv = require("dotenv");
-const { putTodo } = require("./persist/memory.js");
-const { findByIdAndDelete } = require("./persist/todo");
+const memoryCache = require("./persist/memory.js");
+const mongo = require("./persist/mongo");
+//const { findByIdAndDelete } = require("./persist/todo");
 
 // set up port number
 const port = flags.get("port") || process.env.PORT || 3000;
@@ -44,19 +45,39 @@ const port = flags.get("port") || process.env.PORT || 3000;
 //   res.send("get todo");
 // });
 
+const backupInterval = setInterval(backupTimer, 10000);
+
+function backupTimer() {
+  Todo.find().then((todo) => {
+    //res.json(todo);
+    console.log(todo);
+  }).catch((err) => {
+    console.log(err);
+  });
+}
+
+const cacheInterval = setInterval(memoryCache.expiredTodos, 12000);
+
 //The id can then be used
 app.get("/todo/:id", (req, res) => {
     //.id comes from the url
     const id = req.params.id;
-    Todo.findById(id).then((todo) => {
-      if(todo == null){
-        res.status(404).json({message: "not found"});
-      } else {
-        res.json(todo);
-      }
-    }).catch((err) => {
-      res.status(500).json(err);
-    });
+    if (memoryCache.getTodo(id) === false){
+      Todo.findById(id).then((todo) => {
+        if(todo == null){
+          res.status(404).json({message: "not found"});
+        } else {
+          memoryCache.addTodo(todo);
+          //res.json(todo);
+          res.send("Todo found in mongo")
+        }
+      }).catch((err) => {
+        res.status(500).json(err);
+      });
+    } else {
+      // res.json(memoryCache.getTodo(id));
+      res.send("Todo found in cache")
+    }
 });
 
 app.get("/todos", (req, res) => {
